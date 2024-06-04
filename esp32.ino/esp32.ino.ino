@@ -19,7 +19,7 @@ int moistureThreshold = 300; // Soil moisture threshold
 int lowMoistureCount = 0;
 int lowMoistureLimit = 5; // Number of low moisture readings before notification
 unsigned long lastUpdateTime = 0;
-unsigned long summaryUpdateInterval = 120000; // 2 minutes
+unsigned long summaryUpdateInterval = 120000; // 20 minutes
 unsigned long lastMoistureMessageTime = 0; // Last watering message time
 unsigned long moistureMessageInterval = 3600000; // 1 hour in milliseconds
 
