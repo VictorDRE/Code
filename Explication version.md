@@ -3,3 +3,4 @@ ESP32 1.0.1	Correction des erreurs via l’envoi des summary data (juste du visu
 ESP32 1.0.2	Ajout d’un système de notification via WhatsApp
 ESP32 1.0.3	Structuration du code avec 6 .h .cpp 
 ESP32 1.1.0	Ajout d’un système de classe (P.O.O) + restructuration + commentaire en anglais + réadaptation des capteurs dans le code 
+ESP32 1.1.1 Ajout commentaire au maximum + changement du temps pour les summary data 
