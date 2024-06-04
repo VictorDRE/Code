@@ -1,45 +1,52 @@
-#include "SensorManager.h"
-#include <Wire.h>
+#include "SensorManager.h" // Include the header file for the SensorManager class
+#include <Wire.h> // Include the Wire library for I2C communication
 
-#define DHTPIN 15
-#define DHTTYPE DHT22
-#define MOISTURE_SENSOR 34
+// Define sensor pins
+#define DHTPIN 15 // Pin where the DHT22 sensor is connected
+#define DHTTYPE DHT22 // Type of DHT sensor used (DHT22)
+#define MOISTURE_SENSOR 34 // Pin where the soil moisture sensor is connected
 
+// Constructor for the SensorManager class
 SensorManager::SensorManager() : dht(DHTPIN, DHTTYPE), tsl(TSL2561_ADDR_FLOAT, 12345) {}
 
+// Setup method to initialize sensors
 void SensorManager::setup() {
-  Serial.begin(115200); // Ensure this matches the serial monitor speed
-  dht.begin();
-  if (!tsl.begin()) {
-    Serial.println("TSL2561 sensor not recognized");
-    while (1);
+  Serial.begin(115200); // Initialize serial communication at 115200 baud rate
+  dht.begin(); // Initialize the DHT22 sensor
+  if (!tsl.begin()) { // Check if the TSL2561 sensor is recognized
+    Serial.println("TSL2561 sensor not recognized"); // Print an error message if the sensor is not recognized
+    while (1); // Infinite loop in case of error
   }
 }
 
+// Method to read sensor data
 void SensorManager::readSensors() {
-  temperature = dht.readTemperature();
-  humidity = dht.readHumidity();
+  temperature = dht.readTemperature(); // Read temperature from the DHT22 sensor
+  humidity = dht.readHumidity(); // Read humidity from the DHT22 sensor
 
+  // Check if reading temperature or humidity failed
   if (isnan(temperature) || isnan(humidity)) {
-    Serial.println("DHT22 sensor read error!");
-    temperature = NAN;
+    Serial.println("DHT22 sensor read error!"); // Print an error message if there's a problem
+    temperature = NAN; // Set values to NAN in case of error
     humidity = NAN;
   }
 
-  sensors_event_t event;
-  tsl.getEvent(&event);
+  sensors_event_t event; // Create an event to store light sensor data
+  tsl.getEvent(&event); // Read data from the TSL2561 sensor
   if (event.light) {
-    light = event.light;
+    light = event.light; // If light data is valid, store it
   } else {
-    Serial.println("Sensor overload");
+    Serial.println("Sensor overload"); // Print a message if the sensor is overloaded
   }
 
-  moisture = 3508 - analogRead(MOISTURE_SENSOR);
+  moisture = 3508 - analogRead(MOISTURE_SENSOR); // Read and adjust data from the soil moisture sensor
 }
 
+// Method to print sensor data
 void SensorManager::printSensorData() {
   Serial.println("-- Current Conditions --");
 
+  // Print light sensor data
   Serial.print("Light: ");
   Serial.print(light);
   Serial.print(" (");
@@ -56,6 +63,7 @@ void SensorManager::printSensorData() {
   }
   Serial.println("-- End of light conditions --\n");
 
+  // Print soil moisture data
   Serial.print("Soil moisture: ");
   Serial.println(moisture);
   if (moisture < 0) {
@@ -68,9 +76,10 @@ void SensorManager::printSensorData() {
     Serial.println("Wet");
   } else if (moisture >= 700) {
     Serial.println("Very wet");
-  } 
+  }
   Serial.println("-- End of soil conditions --\n");
 
+  // Print air temperature data
   Serial.print("Air temperature: ");
   if (temperature < -40 || temperature > 125) {
     Serial.println("Malfunction");
@@ -88,6 +97,7 @@ void SensorManager::printSensorData() {
   }
   Serial.println("-- End of temperature conditions --\n");
 
+  // Print air humidity data
   Serial.print("Air humidity: ");
   if (humidity < 0 || humidity > 100) {
     Serial.println("Malfunction");
