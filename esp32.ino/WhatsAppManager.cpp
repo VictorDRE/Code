@@ -1,16 +1,19 @@
 #include "WhatsAppManager.h"
 #include <HTTPClient.h>
 
-
 // This tool takes a message (like an SMS) and creates a special link (URL) to send this message via the CallMeBot service. 
-//It then uses another tool (postData) to send the message.
+// It then uses another tool (postData) to send the message.
 void WhatsAppManager::sendMessage(String message) {
+  if (phone_number.length() == 0 || apiKey.length() == 0) {
+    Serial.println("Error: phone_number or apiKey is empty");
+    return;
+  }
   String url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(message);
   postData(url);
 }
 
-//This tool sends the message request to the Internet address (URL) created by sendMessage. 
-//If all goes well, it displays “WhatsApp message sent successfully”. If not, it displays “Error sending WhatsApp message”.
+// This tool sends the message request to the Internet address (URL) created by sendMessage. 
+// If all goes well, it displays “WhatsApp message sent successfully”. If not, it displays “Error sending WhatsApp message”.
 void WhatsAppManager::postData(String url) {
   HTTPClient http;
   http.begin(url);
@@ -24,7 +27,7 @@ void WhatsAppManager::postData(String url) {
 }
 
 // This tool transforms the message so that it is compatible with Internet addresses. 
-//For example, it replaces spaces with + and changes certain special characters into a URL-safe format.
+// For example, it replaces spaces with + and changes certain special characters into a URL-safe format.
 String WhatsAppManager::urlencode(String str) { 
   String encodedString = "";
   char c;

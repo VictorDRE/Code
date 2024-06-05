@@ -10,8 +10,8 @@ public:
 private:
   void postData(String url);
   String urlencode(String str);
-  const String phone_number = "+33778174958";
-  const String apiKey = "9541441";
+  const String phone_number = "+33778174958"; // Assurez-vous que ce numéro est correct et bien formaté
+  const String apiKey = "9541441"; // Assurez-vous que cette API Key est correcte
 };
 
 #endif // WHATSAPP_MANAGER_H

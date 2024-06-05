@@ -1,16 +1,15 @@
-#ifndef WIFI_MANAGER_H // Include guard to prevent multiple inclusions
+#ifndef WIFI_MANAGER_H
 #define WIFI_MANAGER_H
 
-#include <WiFi.h> // Include the WiFi library for network connectivity
+#include <WiFi.h>
 
-// Define the WiFiManager class
 class WiFiManager {
 public:
-  void connectToWiFi(); // Method to connect to WiFi
+  void connectToWiFi();
 
 private:
-  const char* ssid = "Ekip"; // SSID (network name) for the WiFi connection
-  const char* password = "oooooooo"; // Password for the WiFi connection
+  const char* ssid = "Ekip"; // Nouveau SSID
+  const char* password = "oooooooo"; // Nouveau mot de passe
 };
 
 #endif // WIFI_MANAGER_H
