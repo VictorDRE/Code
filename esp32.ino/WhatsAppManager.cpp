@@ -4,12 +4,12 @@
 // This tool takes a message (like an SMS) and creates a special link (URL) to send this message via the CallMeBot service. 
 // It then uses another tool (postData) to send the message.
 void WhatsAppManager::sendMessage(String message) {
-  if (phone_number.length() == 0 || apiKey.length() == 0) {
-    Serial.println("Error: phone_number or apiKey is empty");
-    return;
-  }
   String url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(message);
-  postData(url);
+  try {
+    postData(url);
+  } catch (const std::exception& e) {
+    Serial.println("Error sending WhatsApp message: " + String(e.what()));
+  }
 }
 
 // This tool sends the message request to the Internet address (URL) created by sendMessage. 
@@ -21,7 +21,7 @@ void WhatsAppManager::postData(String url) {
   if (httpCode == 200) {
     Serial.println("WhatsApp message sent successfully");
   } else {
-    Serial.println("Error sending WhatsApp message");
+    Serial.println("Error sending WhatsApp message, code: " + String(httpCode));
   }
   http.end();
 }

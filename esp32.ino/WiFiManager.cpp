@@ -1,17 +1,19 @@
 #include "WiFiManager.h"
 
-// Method to connect to WiFi
 void WiFiManager::connectToWiFi() {
   Serial.println("Connecting to WiFi...");
-  
   WiFi.begin(ssid, password);
+}
 
-  // Wait until the device is connected to WiFi
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Connecting...");
+void WiFiManager::checkWiFiConnection() {
+  if (WiFi.status() != WL_CONNECTED) {
+    unsigned long currentMillis = millis();
+    // Tente de se reconnecter toutes les 10 secondes
+    if (currentMillis - lastReconnectAttempt >= 10000) {
+      lastReconnectAttempt = currentMillis;
+      Serial.println("Reconnecting to WiFi...");
+      WiFi.disconnect();
+      WiFi.begin(ssid, password);
+    }
   }
-
-  Serial.println("Connected to WiFi, IP address: ");
-  Serial.println(WiFi.localIP());
 }
