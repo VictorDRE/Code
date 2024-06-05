@@ -7,3 +7,5 @@ ESP32 1.1.1 Changement 10 min
 ESP32 1.1.2 Modification envoi data (packet loss)
 ESP32 1.1.3 Changement Field pour éviter packet loss
 ESP32 1.2.0 ajout de fonction try and catch
+ESP32 1.2.1 Structuration en 6 modules
+ESP32 1.2.2 Structuration en 7 modules + ajout des LED
