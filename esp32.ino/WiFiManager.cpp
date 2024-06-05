@@ -1,16 +1,17 @@
-#include "WiFiManager.h" // Include the header file for the WiFiManager class
+#include "WiFiManager.h"
 
 // Method to connect to WiFi
 void WiFiManager::connectToWiFi() {
-  Serial.println("Connecting to WiFi..."); // Print a message indicating the start of the connection process
+  Serial.println("Connecting to WiFi...");
   
-  WiFi.begin(ssid, password); // Start the connection process using the SSID and password
+  WiFi.begin(ssid, password);
 
   // Wait until the device is connected to WiFi
   while (WiFi.status() != WL_CONNECTED) {
-    delay(1000); // Wait for 1 second
-    Serial.println("Connecting..."); // Print a message indicating that the connection is still in progress
+    delay(1000);
+    Serial.println("Connecting...");
   }
 
-  Serial.println("Connected to WiFi"); // Print a message indicating that the device is successfully connected to WiFi
+  Serial.println("Connected to WiFi, IP address: ");
+  Serial.println(WiFi.localIP());
 }

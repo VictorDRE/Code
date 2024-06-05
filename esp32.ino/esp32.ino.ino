@@ -24,16 +24,24 @@ unsigned long moistureMessageInterval = 3600000; // 1 hour in milliseconds
 
 void setup() {
   Serial.begin(115200);
+  Serial.println("Setup started");
   wifiManager.connectToWiFi();
   thingSpeakManager.setup();
   sensorManager.setup();
+  Serial.println("Setup completed");
 }
 
 void loop() {
   unsigned long currentTime = millis();
 
+  // Reconnect to WiFi if disconnected
+  if (WiFi.status() != WL_CONNECTED) {
+    wifiManager.connectToWiFi();
+  }
+
   // Envoi des données toutes les 20 secondes pour les champs 1-4
   if (currentTime - lastSendTime >= updateInterval) {
+    Serial.println("Reading sensors and sending data...");
     sensorManager.readSensors();
     sensorManager.printSensorData();
     thingSpeakManager.sendData(sensorManager);
@@ -41,23 +49,29 @@ void loop() {
 
     // Send WhatsApp notification if needed
     if (sensorManager.temperature < 10) {
+      Serial.println("Temperature is too low, sending WhatsApp notification...");
       whatsAppManager.sendMessage("Attention à votre plante. Il fait très froid !");
     } else if (sensorManager.temperature > 30) {
+      Serial.println("Temperature is too high, sending WhatsApp notification...");
       whatsAppManager.sendMessage("Attention à votre plante. Température élevée !");
     }
 
     if (sensorManager.moisture < 200) {
+      Serial.println("Moisture level is low, sending WhatsApp notification...");
       whatsAppManager.sendMessage("Attention à votre plante. Besoin d'un arrosage automatique !");
     } else if (sensorManager.moisture > 1000) {
       if (currentTime - lastMoistureMessageTime >= moistureMessageInterval) {
+        Serial.println("Moisture level is high, sending WhatsApp notification...");
         whatsAppManager.sendMessage("Arrosage automatique réalisé pour votre plante.");
         lastMoistureMessageTime = currentTime;
       }
     }
 
     if (sensorManager.light < 50) {
+      Serial.println("Light level is too low, sending WhatsApp notification...");
       whatsAppManager.sendMessage("Attention à votre plante. Placez-la au soleil !");
     } else if (sensorManager.light > 15000) {
+      Serial.println("Light level is too high, sending WhatsApp notification...");
       whatsAppManager.sendMessage("Attention à votre plante. Placez-la un peu plus à l'ombre !");
     }
 
@@ -70,6 +84,7 @@ void loop() {
 
     // Send notification if soil moisture is low for too long
     if (lowMoistureCount >= lowMoistureLimit) {
+      Serial.println("Soil moisture is low for too long, sending WhatsApp notification...");
       whatsAppManager.sendMessage("Attention à votre plante. Humidité du sol insuffisante pendant une période prolongée !");
       lowMoistureCount = 0;
     }
