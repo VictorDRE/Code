@@ -15,7 +15,7 @@ void SensorManager::setup() {
   dht.begin(); // Initialize the DHT22 sensor
   if (!tsl.begin()) { // Check if the TSL2561 sensor is recognized
     Serial.println("TSL2561 sensor not recognized"); // Print an error message if the sensor is not recognized
-    while (1); // Infinite loop in case of error
+    while (1); // Infinite loop in case of error // FLA_ Pas de fonction bloquante 
   }
 }
 

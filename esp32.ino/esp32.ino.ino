@@ -2,7 +2,6 @@
 #include "ThingSpeakManager.h"
 #include "SensorManager.h"
 #include "WhatsAppManager.h"
-#include "config.h"
 
 // Instantiate managers
 WiFiManager wifiManager;
@@ -18,8 +17,8 @@ int lightThreshold = 200; // Light threshold
 int moistureThreshold = 300; // Soil moisture threshold
 int lowMoistureCount = 0;
 int lowMoistureLimit = 5; // Number of low moisture readings before notification
-unsigned long lastUpdateTime = 0;
-unsigned long summaryUpdateInterval = 300000; // 20 minutes
+unsigned long lastSummarySendTime = 0;
+unsigned long summaryUpdateInterval = 900000; // 15 minutes in milliseconds
 unsigned long lastMoistureMessageTime = 0; // Last watering message time
 unsigned long moistureMessageInterval = 3600000; // 1 hour in milliseconds
 
@@ -33,12 +32,11 @@ void setup() {
 void loop() {
   unsigned long currentTime = millis();
 
-  // Check if it's time to send data to ThingSpeak
+  // Envoi des données toutes les 20 secondes pour les champs 1-4
   if (currentTime - lastSendTime >= updateInterval) {
     sensorManager.readSensors();
-    sensorManager.printSensorData();  // Print sensor data
+    sensorManager.printSensorData();
     thingSpeakManager.sendData(sensorManager);
-
     lastSendTime = currentTime;
 
     // Send WhatsApp notification if needed
@@ -77,9 +75,9 @@ void loop() {
     }
   }
 
-  // Send summary data to ThingSpeak every 2 minutes
-  if (currentTime - lastUpdateTime >= summaryUpdateInterval) {
+  // Envoi des données toutes les 15 minutes pour les champs 5-8
+  if (currentTime - lastSummarySendTime >= summaryUpdateInterval) {
     thingSpeakManager.sendSummaryData(sensorManager);
-    lastUpdateTime = currentTime;
+    lastSummarySendTime = currentTime;
   }
 }
