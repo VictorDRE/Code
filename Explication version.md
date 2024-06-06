@@ -12,3 +12,4 @@ ESP32 1.2.2 Structuration en 7 modules + ajout des LED
 ESP32 1.2.3 Ajout de mes settings led 
 ESP32 1.2.4 Led fonctionnel + try and catch 
 ESP32 1.2.5 Changement LED Branchement + Field error 
+ESP32 1.2.6 Try and catch au lieu d'un while(1) pour le TSL2561 
