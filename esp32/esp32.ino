@@ -46,8 +46,6 @@ void loop() {
 
   dataManager.handleData();
 
-  // Suppression du mode sommeil
-
   // Check plant conditions and set error state if needed
   bool plantConditionError = false; // Replace with actual condition check
   if (plantConditionError) {
