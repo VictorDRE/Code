@@ -10,8 +10,8 @@ public:
   void checkWiFiConnection(); // Method to check WiFi connection and attempt non-blocking reconnect
 
 private:
-  const char* ssid = "Ekip"; // WiFi SSID
-  const char* password = "oooooooo"; // WiFi password
+  const char* ssid = "SII-BOURGES-SECOURS"; // WiFi SSID
+  const char* password = "B0uRG35S11!!2019"; // WiFi password
   unsigned long startAttemptTime = 0; // To manage reconnect attempts
 };
 
