@@ -17,13 +17,13 @@ void LEDManager::setNormalOperation() {
 }
 
 void LEDManager::setNoInternet() {
-  interval = 2000;  // Clignote toutes les 2 secondes
+  interval = 2000;  // Blinks every 2 seconds
   blinkLED(redPin, interval);
   turnOffLED(greenPin);
 }
 
 void LEDManager::setErrorState() {
-  turnOnLED(redPin);  // LED rouge continue
+  turnOnLED(redPin);  // Continuous red LED
   turnOffLED(greenPin);
   currentPin = -1; // Stop blinking
 }

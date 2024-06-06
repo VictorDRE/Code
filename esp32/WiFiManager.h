@@ -12,7 +12,7 @@ public:
 private:
   const char* ssid = "Ekip"; // WiFi SSID
   const char* password = "oooooooo"; // WiFi password
-  unsigned long lastReconnectAttempt = 0; // To manage reconnect attempts
+  unsigned long startAttemptTime = 0; // To manage reconnect attempts
 };
 
 #endif // WIFI_MANAGER_H

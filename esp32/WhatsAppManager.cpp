@@ -6,6 +6,7 @@ void WhatsAppManager::sendMessage(String message) {
   String url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(message);
   try {
     postData(url);
+    Serial.println("WhatsApp message sent: " + message);
   } catch (const std::exception& e) {
     Serial.println("Error sending WhatsApp message: " + String(e.what()));
   }

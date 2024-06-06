@@ -1,3 +1,4 @@
+#include <WiFi.h>
 #include "WiFiManager.h"
 #include "ThingSpeakManager.h"
 #include "SensorManager.h"
@@ -24,34 +25,41 @@ void setup() {
   while (!Serial) {
     ; // Wait for Serial to be ready
   }
+
   Serial.println("Setup started");
+
   ledManager.setup();
-  try {
-    wifiManager.connectToWiFi();
-    thingSpeakManager.setup();
-    sensorManager.setup();
-  } catch (const std::exception& e) {
-    Serial.println(e.what());
-  }
+  wifiManager.connectToWiFi();
+  thingSpeakManager.setup();
+  sensorManager.setup();
+
   Serial.println("Setup completed");
   ledManager.setNormalOperation(); // Indicate normal operation after setup
 }
 
 void loop() {
+  wifiManager.checkWiFiConnection();
+
   if (WiFi.status() != WL_CONNECTED) {
     ledManager.setNoInternet(); // Indicate no internet connection
+    Serial.println("No Internet connection");
   } else {
     ledManager.setNormalOperation(); // Indicate normal operation
   }
 
-  dataManager.handleData();
+  try {
+    dataManager.handleData();
+  } catch (const std::exception& e) {
+    Serial.println(e.what());
+  }
 
-  // Suppression du mode sommeil
+  // Removing sleep mode
 
   // Check plant conditions and set error state if needed
   bool plantConditionError = false; // Replace with actual condition check
   if (plantConditionError) {
     ledManager.setErrorState(); // Indicate plant condition error
+    Serial.println("Plant condition error detected");
   }
 
   ledManager.update();

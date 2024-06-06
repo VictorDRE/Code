@@ -14,6 +14,9 @@ bool ThingSpeakManager::sendField(int fieldNumber, float value) {
     return true;
   } else {
     Serial.println("Error sending field " + String(fieldNumber) + ": " + String(responseCode));
+    if (responseCode == -304) {
+      Serial.println("Error -304: Not connected to the internet or ThingSpeak server not reachable");
+    }
     return false;
   }
 }
