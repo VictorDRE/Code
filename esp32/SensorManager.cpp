@@ -5,18 +5,37 @@
 #define DHTTYPE DHT22
 #define MOISTURE_SENSOR 34
 
-SensorManager::SensorManager() : dht(DHTPIN, DHTTYPE), tsl(TSL2561_ADDR_FLOAT, 12345) {}
+SensorManager::SensorManager() 
+  : dht(DHTPIN, DHTTYPE), 
+    tsl(TSL2561_ADDR_FLOAT, 12345), 
+    tslInitialized(false), 
+    lastRetryTime(0), 
+    retryCount(0) {}
 
 void SensorManager::setup() {
   Serial.begin(115200);
   dht.begin();
+  retryTSLSetup(); // Initial attempt to setup TSL2561
+}
+
+void SensorManager::retryTSLSetup() {
   if (!tsl.begin()) {
     Serial.println("TSL2561 sensor not recognized");
-    while (1);
+    tslInitialized = false;
+    lastRetryTime = millis();
+    retryCount++;
+  } else {
+    tslInitialized = true;
+    Serial.println("TSL2561 sensor initialized successfully");
   }
 }
 
 void SensorManager::readSensors() {
+  // Retry TSL2561 setup if it failed previously and the retry count has not exceeded max retries
+  if (!tslInitialized && retryCount <= maxRetries && millis() - lastRetryTime >= retryInterval) {
+    retryTSLSetup();
+  }
+
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
 
@@ -26,12 +45,16 @@ void SensorManager::readSensors() {
     humidity = NAN;
   }
 
-  sensors_event_t event;
-  tsl.getEvent(&event);
-  if (event.light) {
-    light = event.light;
+  if (tslInitialized) {
+    sensors_event_t event;
+    tsl.getEvent(&event);
+    if (event.light) {
+      light = event.light;
+    } else {
+      Serial.println("Sensor overload");
+    }
   } else {
-    Serial.println("Sensor overload");
+    light = -1; // Set a default error value or handle the error as needed
   }
 
   int rawMoisture = analogRead(MOISTURE_SENSOR);

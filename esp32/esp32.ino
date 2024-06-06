@@ -44,9 +44,13 @@ void loop() {
     ledManager.setNormalOperation(); // Indicate normal operation
   }
 
-  dataManager.handleData();
+  try {
+    dataManager.handleData();
+  } catch (const std::exception& e) {
+    Serial.println(e.what());
+  }
 
-  // Suppression du mode sommeil
+  // Removing sleep mode
 
   // Check plant conditions and set error state if needed
   bool plantConditionError = false; // Replace with actual condition check

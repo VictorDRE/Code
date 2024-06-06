@@ -8,10 +8,10 @@ void WiFiManager::connectToWiFi() {
   WiFi.begin(ssid, password);
   ledManager.setNoInternet(); // Indicate connecting state (using no internet as an equivalent state)
 
-  // Attendre que le WiFi se connecte avec un timeout de 30 secondes
+  // Wait for WiFi to connect with a 30-second timeout
   unsigned long startAttemptTime = millis();
 
-  // Tentative de connexion pendant 30 secondes
+  // Attempt to connect for 30 seconds
   while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 30000) {
     delay(500);
     Serial.print(".");
