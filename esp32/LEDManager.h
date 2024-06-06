@@ -7,10 +7,10 @@ class LEDManager {
 public:
   LEDManager(int greenPin, int redPin);
   void setup();
-  void setNormalOperation();       // LED verte allumée en continu
-  void setNoInternet();            // LED rouge clignotante
-  void setErrorState();            // LED rouge allumée en continu
-  void update();                   // Mise à jour de l'état des LED
+  void setNormalOperation();       // Green LED on continuously
+  void setNoInternet();            // Red LED blinking
+  void setErrorState();            // Red LED on continuously
+  void update();                   // Update LED state
 
 private:
   int greenPin;

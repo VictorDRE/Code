@@ -27,22 +27,22 @@ void DataManager::handleData() {
 
         if (sensorManager->temperature < 10) {
           Serial.println("Temperature is too low, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Il fait très froid !");
+          notificationManager->sendNotification("Attention to your plant. It's very cold!");
           messageSent = true;
         } else if (sensorManager->temperature > 30) {
           Serial.println("Temperature is too high, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Température élevée !");
+          notificationManager->sendNotification("Attention to your plant. High temperature!");
           messageSent = true;
         }
 
         if (sensorManager->moisture < 10) {
           Serial.println("Moisture level is very low, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Besoin d'un arrosage automatique !");
+          notificationManager->sendNotification("Attention to your plant. Needs automatic watering!");
           messageSent = true;
         } else if (sensorManager->moisture > 70) {
           if (currentTime - lastMoistureMessageTime >= moistureMessageInterval) {
             Serial.println("Moisture level is very high, sending WhatsApp notification...");
-            notificationManager->sendNotification("Arrosage automatique réalisé pour votre plante.");
+            notificationManager->sendNotification("Automatic watering done for your plant.");
             lastMoistureMessageTime = currentTime;
           }
           messageSent = true;
@@ -50,11 +50,11 @@ void DataManager::handleData() {
 
         if (sensorManager->light < 50) {
           Serial.println("Light level is too low, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Placez-la au soleil !");
+          notificationManager->sendNotification("Attention to your plant. Place it in the sun!");
           messageSent = true;
         } else if (sensorManager->light > 15000) {
           Serial.println("Light level is too high, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Placez-la un peu plus à l'ombre !");
+          notificationManager->sendNotification("Attention to your plant. Place it in the shade!");
           messageSent = true;
         }
 
@@ -66,7 +66,7 @@ void DataManager::handleData() {
 
         if (lowMoistureCount >= lowMoistureLimit) {
           Serial.println("Soil moisture is low for too long, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Humidité du sol insuffisante pendant une période prolongée !");
+          notificationManager->sendNotification("Attention to your plant. Insufficient soil moisture for a prolonged period!");
           lowMoistureCount = 0;
           messageSent = true;
         }
