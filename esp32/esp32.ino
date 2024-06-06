@@ -53,8 +53,6 @@ void loop() {
     Serial.println(e.what());
   }
 
-  // Removing sleep mode
-
   // Check plant conditions and set error state if needed
   bool plantConditionError = false; // Replace with actual condition check
   if (plantConditionError) {
