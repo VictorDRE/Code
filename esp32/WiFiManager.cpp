@@ -3,15 +3,16 @@
 
 extern LEDManager ledManager; // Use extern to reference the LEDManager instance
 
+// Connect to WiFi network
 void WiFiManager::connectToWiFi() {
   Serial.println("Connecting to WiFi...");
   WiFi.begin(ssid, password);
-  ledManager.setNoInternet(); // Indicate connecting state (using no internet as an equivalent state)
+  ledManager.setWifiSearching(); // Indicate WiFi searching
 
-  // Attendre que le WiFi se connecte avec un timeout de 30 secondes
+  // Wait WiFi for 30 secs before time out 
   unsigned long startAttemptTime = millis();
 
-  // Tentative de connexion pendant 30 secondes
+  // Try to connect during 30 secs
   while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 30000) {
     delay(500);
     Serial.print(".");
@@ -19,11 +20,14 @@ void WiFiManager::connectToWiFi() {
 
   if (WiFi.status() == WL_CONNECTED) {
     Serial.println("Connected to WiFi");
+    ledManager.setNormalOperation(); // Indicate normal operation
   } else {
     Serial.println("Failed to connect to WiFi");
+    ledManager.setNoInternet(); // Indicate no internet connection
   }
 }
 
+// Check WiFi connection and attempt reconnect if disconnected
 void WiFiManager::checkWiFiConnection() {
   if (WiFi.status() != WL_CONNECTED) {
     unsigned long currentMillis = millis();
@@ -32,9 +36,9 @@ void WiFiManager::checkWiFiConnection() {
       Serial.println("Reconnecting to WiFi...");
       WiFi.disconnect();
       WiFi.begin(ssid, password);
-      ledManager.setNoInternet(); // Indicate connecting state (using no internet as an equivalent state)
+      ledManager.setWifiSearching(); // Indicate WiFi searching
     }
   } else {
-    ledManager.setNormalOperation(); // Indicate active state
+    ledManager.setNormalOperation(); // Indicate normal operation
   }
 }

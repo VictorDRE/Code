@@ -1,16 +1,15 @@
 #ifndef NOTIFICATION_MANAGER_H
 #define NOTIFICATION_MANAGER_H
 
-#include "WhatsAppManager.h"
+#include "EmailManager.h"
 
-// NotificationManager class to handle notifications
 class NotificationManager {
 public:
-  NotificationManager(WhatsAppManager* whatsappManager);
-  void sendNotification(const String& message);
+    NotificationManager(EmailManager* emailManager);
+    void sendNotification(const String& message);
 
 private:
-  WhatsAppManager* whatsappManager;
+    EmailManager* emailManager;
 };
 
 #endif // NOTIFICATION_MANAGER_H

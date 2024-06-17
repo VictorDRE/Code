@@ -1,67 +1,39 @@
 #include "ThingSpeakManager.h"
+#include "SensorManager.h"
 
 void ThingSpeakManager::setup() {
-  ThingSpeak.begin(client);
-  Serial.println("ThingSpeak setup completed");
+    ThingSpeak.begin(client);
 }
 
 bool ThingSpeakManager::sendField(int fieldNumber, float value) {
-  Serial.println("Sending field " + String(fieldNumber) + " with value: " + String(value));
-  ThingSpeak.setField(fieldNumber, value);
-  int responseCode = ThingSpeak.writeFields(channelNumber, apiKey);
-  if (responseCode == 200) {
-    Serial.println("Field " + String(fieldNumber) + " sent successfully");
-    return true;
-  } else {
-    Serial.println("Error sending field " + String(fieldNumber) + ": " + String(responseCode));
-    return false;
-  }
+    return retrySendField(fieldNumber, value, 3);
 }
 
 bool ThingSpeakManager::retrySendField(int fieldNumber, float value, int maxRetries) {
-  int attempts = 0;
-  while (attempts < maxRetries) {
-    if (sendField(fieldNumber, value)) {
-      return true;
+    int statusCode;
+    for (int attempts = 0; attempts < maxRetries; attempts++) {
+        statusCode = ThingSpeak.writeField(channelNumber, fieldNumber, value, apiKey);
+        if (statusCode == 200) {
+            return true;
+        }
+        delay(2000); // Wait 2 seconds before retrying
     }
-    attempts++;
-    int delayTime = 5000 * attempts;
-    Serial.println("Retrying field " + String(fieldNumber) + " in " + String(delayTime / 1000) + " seconds...");
-    delay(delayTime);
-  }
-  return false;
+    return false;
 }
 
-void ThingSpeakManager::sendData(SensorManager& sensorManager) {
-  Serial.println("Sending sensor data to ThingSpeak...");
-  if (!retrySendField(1, sensorManager.temperature, 3)) {
-    Serial.println("Failed to send field 1 after 3 attempts");
-  }
-  if (!retrySendField(2, sensorManager.humidity, 3)) {
-    Serial.println("Failed to send field 2 after 3 attempts");
-  }
-  if (!retrySendField(3, sensorManager.light, 3)) {
-    Serial.println("Failed to send field 3 after 3 attempts");
-  }
-  if (!retrySendField(4, sensorManager.moisture, 3)) {
-    Serial.println("Failed to send field 4 after 3 attempts");
-  }
-  Serial.println("Sensor data sent");
+bool ThingSpeakManager::sendData(SensorManager& sensorManager) {
+    bool success = true;
+    success &= sendField(1, sensorManager.getTemperature());
+    success &= sendField(2, sensorManager.getMoisture());
+    success &= sendField(3, sensorManager.getLight());
+    return success;
 }
 
-void ThingSpeakManager::sendSummaryData(SensorManager& sensorManager) {
-  Serial.println("Sending summary data to ThingSpeak...");
-  if (!retrySendField(5, sensorManager.temperature, 3)) {
-    Serial.println("Failed to send summary field 5 after 3 attempts");
-  }
-  if (!retrySendField(6, sensorManager.humidity, 3)) {
-    Serial.println("Failed to send summary field 6 after 3 attempts");
-  }
-  if (!retrySendField(7, sensorManager.light, 3)) {
-    Serial.println("Failed to send summary field 7 after 3 attempts");
-  }
-  if (!retrySendField(8, sensorManager.moisture, 3)) {
-    Serial.println("Failed to send summary field 8 after 3 attempts");
-  }
-  Serial.println("Summary data sent");
+bool ThingSpeakManager::sendSummaryData(SensorManager& sensorManager) {
+    bool success = true;
+    success &= sendField(5, sensorManager.getTemperature());
+    success &= sendField(6, sensorManager.getMoisture());
+    success &= sendField(7, sensorManager.getLight());
+    success &= sendField(8, sensorManager.getHumidity());
+    return success;
 }
