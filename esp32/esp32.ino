@@ -7,8 +7,8 @@
 #include "NotificationManager.h"
 #include "LEDManager.h"
 
-#define uS_TO_S_FACTOR 100000000  
-#define TIME_TO_SLEEP  100      
+//#define uS_TO_S_FACTOR 1000000 
+//#define TIME_TO_SLEEP  60     
 
 // Define LED pins
 const int greenLEDPin = 12;
@@ -79,8 +79,8 @@ void setup() {
     printWakeupReason();
 
     // Configure the timer to wake up the ESP32 every 100 seconds
-    esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-    Serial.println("Setup ESP32 to sleep for " + String(TIME_TO_SLEEP) + " seconds");
+    esp_sleep_enable_timer_wakeup(3600000000);//TIME_TO_SLEEP * uS_TO_S_FACTOR);
+    //Serial.println("Setup ESP32 to sleep for " + String(TIME_TO_SLEEP) + " seconds");
 
     // Go to sleep now
     Serial.println("Going to sleep now");

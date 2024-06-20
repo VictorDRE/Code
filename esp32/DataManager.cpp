@@ -55,6 +55,8 @@ void DataManager::readAndSendSensorData() {
 
 void DataManager::handleNotifications() {
     bool messageSent = false;
+
+    // Comment or remove these lines to prevent sending emails for temperature and light levels
     messageSent |= checkAndSendNotification(sensorManager->temperature < 10, "Temperature is too low", "Temperature sensor", "Attention to your plant. It's very cold!");
     messageSent |= checkAndSendNotification(sensorManager->temperature > 30, "Temperature is too high", "Temperature sensor", "Attention to your plant. High temperature!");
     messageSent |= checkAndSendNotification(sensorManager->moisture < 10, "Moisture level is very low", "Moisture sensor", "Attention to your plant. Needs automatic watering!");
@@ -63,7 +65,8 @@ void DataManager::handleNotifications() {
 
     if (sensorManager->moisture > 70 && (millis() - lastMoistureMessageTime >= moistureMessageInterval)) {
         Serial.println("Moisture level is very high, sending email notification...");
-        notificationManager->sendNotification("Automatic watering done for your plant.");
+        // Comment this line to prevent sending notification email
+        // notificationManager->sendNotification("Automatic watering done for your plant.");
         lastMoistureMessageTime = millis();
         messageSent = true;
         logCriticalEvent("Moisture level very high.", "Moisture sensor");
@@ -79,7 +82,8 @@ void DataManager::handleNotifications() {
 
     if (lowMoistureCount >= lowMoistureLimit) {
         Serial.println("Soil moisture is low for too long, sending email notification...");
-        notificationManager->sendNotification("Attention to your plant. Insufficient soil moisture for a prolonged period!");
+        // Comment this line to prevent sending notification email
+        // notificationManager->sendNotification("Attention to your plant. Insufficient soil moisture for a prolonged period!");
         lowMoistureCount = 0;
         messageSent = true;
         logCriticalEvent("Soil moisture low for too long.", "Moisture sensor");
@@ -95,6 +99,8 @@ void DataManager::handleNotifications() {
         ledManager->setNormalOperation();
     }
 }
+
+
 
 bool DataManager::checkAndSendNotification(bool condition, const String& event, const String& sensor, const String& message) {
     if (condition) {
@@ -112,8 +118,11 @@ void DataManager::logCriticalEvent(const String& event, const String& sensor) {
     String timestamp = getCurrentTime();
     criticalEvents.push_back({event, sensor, timestamp, false});
     criticalEventCount++;
+
+    // Send critical event email with details
     EmailManager::sendCriticalEventEmail(event + " detected by " + sensor + " at " + timestamp);
 }
+
 
 void DataManager::resolveCriticalEvent(const String& event, const String& sensor) {
     for (auto& criticalEvent : criticalEvents) {
