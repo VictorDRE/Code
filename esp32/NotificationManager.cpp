@@ -1,7 +1,7 @@
 #include "NotificationManager.h"
 
-NotificationManager::NotificationManager(WhatsAppManager* whatsappManager) : whatsappManager(whatsappManager) {}
+NotificationManager::NotificationManager(EmailManager* emailManager) : emailManager(emailManager) {}
 
 void NotificationManager::sendNotification(const String& message) {
-  whatsappManager->sendMessage(message);
+    emailManager->sendEmail("Alerte Arrosage Automatique", message);
 }

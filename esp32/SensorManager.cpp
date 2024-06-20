@@ -7,6 +7,7 @@
 
 SensorManager::SensorManager() : dht(DHTPIN, DHTTYPE), tsl(TSL2561_ADDR_FLOAT, 12345) {}
 
+// Setup sensors
 void SensorManager::setup() {
   Serial.begin(115200);
   dht.begin();
@@ -16,6 +17,7 @@ void SensorManager::setup() {
   }
 }
 
+// Read data from sensors
 void SensorManager::readSensors() {
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
@@ -40,6 +42,7 @@ void SensorManager::readSensors() {
   if (moisture > 100) moisture = 100;
 }
 
+// Print sensor data to the serial monitor
 void SensorManager::printSensorData() {
   Serial.println("-- Current Conditions --");
 

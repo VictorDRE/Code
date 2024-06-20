@@ -1,40 +1,52 @@
 #include "WiFiManager.h"
 #include "LEDManager.h"
 
-extern LEDManager ledManager; // Use extern to reference the LEDManager instance
+extern LEDManager ledManager;
 
 void WiFiManager::connectToWiFi() {
-  Serial.println("Connecting to WiFi...");
-  WiFi.begin(ssid, password);
-  ledManager.setNoInternet(); // Indicate connecting state (using no internet as an equivalent state)
+    Serial.println("Connecting to WiFi...");
+    ledManager.setWifiSearching(); // Indicate WiFi searching
+    WiFi.begin(ssid, password);
 
-  // Attendre que le WiFi se connecte avec un timeout de 30 secondes
-  unsigned long startAttemptTime = millis();
+    int retries = 0;
+    while (WiFi.status() != WL_CONNECTED && retries < 15) {
+        delay(500);
+        Serial.print(".");
+        retries++;
+    }
 
-  // Tentative de connexion pendant 30 secondes
-  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 30000) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("Connected to WiFi");
-  } else {
-    Serial.println("Failed to connect to WiFi");
-  }
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("WiFi Connected");
+        ledManager.setNormalOperation();
+    } else {
+        Serial.println("Failed to connect to WiFi");
+        ledManager.setNoInternet();
+    }
 }
 
 void WiFiManager::checkWiFiConnection() {
-  if (WiFi.status() != WL_CONNECTED) {
-    unsigned long currentMillis = millis();
-    if (currentMillis - lastReconnectAttempt >= 10000) {
-      lastReconnectAttempt = currentMillis;
-      Serial.println("Reconnecting to WiFi...");
-      WiFi.disconnect();
-      WiFi.begin(ssid, password);
-      ledManager.setNoInternet(); // Indicate connecting state (using no internet as an equivalent state)
+    if (WiFi.status() != WL_CONNECTED) {
+        Serial.println("WiFi connection lost. Attempting to reconnect...");
+        ledManager.setWifiSearching(); // Indicate WiFi searching
+
+        int retries = 0;
+        WiFi.disconnect();
+        WiFi.begin(ssid, password);
+
+        while (WiFi.status() != WL_CONNECTED && retries < 10) {
+            delay(500);
+            Serial.print(".");
+            retries++;
+        }
+
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.println("Reconnected to WiFi");
+            ledManager.setNormalOperation();
+        } else {
+            Serial.println("Failed to reconnect to WiFi");
+            ledManager.setNoInternet();
+        }
+    } else {
+        ledManager.setNormalOperation();
     }
-  } else {
-    ledManager.setNormalOperation(); // Indicate active state
-  }
 }

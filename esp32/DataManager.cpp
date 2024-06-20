@@ -1,110 +1,205 @@
 #include "DataManager.h"
-#include "LEDManager.h"
+#include "EmailManager.h"
+#include <ctime>
 
-extern LEDManager ledManager; // Use extern to reference the LEDManager instance
-
-DataManager::DataManager(ThingSpeakManager* thingSpeakManager, SensorManager* sensorManager, NotificationManager* notificationManager) 
-  : thingSpeakManager(thingSpeakManager), sensorManager(sensorManager), notificationManager(notificationManager), errorOccurred(false), errorStartTime(0) {}
+DataManager::DataManager(ThingSpeakManager* thingSpeakManager, SensorManager* sensorManager, NotificationManager* notificationManager, LEDManager* ledManager)
+    : thingSpeakManager(thingSpeakManager), sensorManager(sensorManager), notificationManager(notificationManager), ledManager(ledManager),
+      errorOccurred(false), errorStartTime(0), criticalEventCount(0), sleepCount(0),
+      lastMoistureMessageTime(0), lowMoistureCount(0) {
+}
 
 void DataManager::handleData() {
-  unsigned long currentTime = millis();
+    unsigned long currentTime = millis();
 
-  if (currentTime - lastSendTime >= updateInterval) {
     if (WiFi.status() == WL_CONNECTED) {
-      Serial.println("Reading sensors and sending data...");
-      try {
+        Serial.println("Reading sensors and sending data...");
+        readAndSendSensorData();
+        lastSendTime = currentTime;
+    } else {
+        Serial.println("WiFi not connected, skipping data send.");
+        ledManager->setNoInternet();
+    }
+
+    if (errorOccurred && (currentTime - errorStartTime >= 600000)) {
+        errorOccurred = false;
+        ledManager->setNormalOperation();
+    }
+
+    sleepCount++;
+
+    if (sleepCount % 24 == 0) { // Every 24 sleep cycles
+        sendDailySummary();
+    }
+
+    if (sleepCount % 168 == 0) { // Every 168 sleep cycles (weekly)
+        sendWeeklySummary();
+    }
+
+    if (sleepCount % 720 == 0) { // Every 720 sleep cycles (monthly)
+        sendMonthlySummary();
+    }
+}
+
+void DataManager::readAndSendSensorData() {
+    try {
         sensorManager->readSensors();
         sensorManager->printSensorData();
-        thingSpeakManager->sendData(*sensorManager);
-      } catch (const std::exception& e) {
+        if (!thingSpeakManager->sendData(*sensorManager)) {
+            ledManager->setCriticalError();
+        }
+        handleNotifications();
+    } catch (const std::exception& e) {
         Serial.println(e.what());
-      }
-
-      lastSendTime = currentTime;
-
-      try {
-        bool messageSent = false; // Flag to check if a message has been sent
-
-        if (sensorManager->temperature < 10) {
-          Serial.println("Temperature is too low, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Il fait très froid !");
-          messageSent = true;
-        } else if (sensorManager->temperature > 30) {
-          Serial.println("Temperature is too high, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Température élevée !");
-          messageSent = true;
-        }
-
-        if (sensorManager->moisture < 10) {
-          Serial.println("Moisture level is very low, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Besoin d'un arrosage automatique !");
-          messageSent = true;
-        } else if (sensorManager->moisture > 70) {
-          if (currentTime - lastMoistureMessageTime >= moistureMessageInterval) {
-            Serial.println("Moisture level is very high, sending WhatsApp notification...");
-            notificationManager->sendNotification("Arrosage automatique réalisé pour votre plante.");
-            lastMoistureMessageTime = currentTime;
-          }
-          messageSent = true;
-        }
-
-        if (sensorManager->light < 50) {
-          Serial.println("Light level is too low, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Placez-la au soleil !");
-          messageSent = true;
-        } else if (sensorManager->light > 15000) {
-          Serial.println("Light level is too high, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Placez-la un peu plus à l'ombre !");
-          messageSent = true;
-        }
-
-        if (sensorManager->moisture < 30) {
-          lowMoistureCount++;
-        } else {
-          lowMoistureCount = 0;
-        }
-
-        if (lowMoistureCount >= lowMoistureLimit) {
-          Serial.println("Soil moisture is low for too long, sending WhatsApp notification...");
-          notificationManager->sendNotification("Attention à votre plante. Humidité du sol insuffisante pendant une période prolongée !");
-          lowMoistureCount = 0;
-          messageSent = true;
-        }
-
-        if (messageSent) {
-          errorOccurred = true;
-          errorStartTime = currentTime;
-          ledManager.setErrorState(); // Indicate error state
-        } else {
-          ledManager.setNormalOperation(); // Indicate normal operation if no errors
-        }
-
-      } catch (const std::exception& e) {
-        Serial.println(e.what());
-      }
-    } else {
-      Serial.println("WiFi not connected, skipping data send.");
-      ledManager.setNoInternet(); // Indicate no internet connection
     }
-  }
+}
 
-  if (currentTime - lastSummarySendTime >= summaryUpdateInterval) {
-    if (WiFi.status() == WL_CONNECTED) {
-      try {
+void DataManager::handleNotifications() {
+    bool messageSent = false;
+    messageSent |= checkAndSendNotification(sensorManager->temperature < 10, "Temperature is too low", "Temperature sensor", "Attention to your plant. It's very cold!");
+    messageSent |= checkAndSendNotification(sensorManager->temperature > 30, "Temperature is too high", "Temperature sensor", "Attention to your plant. High temperature!");
+    messageSent |= checkAndSendNotification(sensorManager->moisture < 10, "Moisture level is very low", "Moisture sensor", "Attention to your plant. Needs automatic watering!");
+    messageSent |= checkAndSendNotification(sensorManager->light < 50, "Light level is too low", "Light sensor", "Attention to your plant. Place it in the sun!");
+    messageSent |= checkAndSendNotification(sensorManager->light > 15000, "Light level is too high", "Light sensor", "Attention to your plant. Place it in the shade!");
+
+    if (sensorManager->moisture > 70 && (millis() - lastMoistureMessageTime >= moistureMessageInterval)) {
+        Serial.println("Moisture level is very high, sending email notification...");
+        notificationManager->sendNotification("Automatic watering done for your plant.");
+        lastMoistureMessageTime = millis();
+        messageSent = true;
+        logCriticalEvent("Moisture level very high.", "Moisture sensor");
+    } else {
+        resolveCriticalEvent("Moisture level very high.", "Moisture sensor");
+    }
+
+    if (sensorManager->moisture < 30) {
+        lowMoistureCount++;
+    } else {
+        lowMoistureCount = 0;
+    }
+
+    if (lowMoistureCount >= lowMoistureLimit) {
+        Serial.println("Soil moisture is low for too long, sending email notification...");
+        notificationManager->sendNotification("Attention to your plant. Insufficient soil moisture for a prolonged period!");
+        lowMoistureCount = 0;
+        messageSent = true;
+        logCriticalEvent("Soil moisture low for too long.", "Moisture sensor");
+    } else {
+        resolveCriticalEvent("Soil moisture low for too long.", "Moisture sensor");
+    }
+
+    if (messageSent) {
+        errorOccurred = true;
+        errorStartTime = millis();
+        ledManager->setErrorState();
+    } else {
+        ledManager->setNormalOperation();
+    }
+}
+
+bool DataManager::checkAndSendNotification(bool condition, const String& event, const String& sensor, const String& message) {
+    if (condition) {
+        Serial.println(event + ", sending email notification...");
+        notificationManager->sendNotification(message);
+        logCriticalEvent(event, sensor);
+        return true;
+    } else {
+        resolveCriticalEvent(event, sensor);
+        return false;
+    }
+}
+
+void DataManager::logCriticalEvent(const String& event, const String& sensor) {
+    String timestamp = getCurrentTime();
+    criticalEvents.push_back({event, sensor, timestamp, false});
+    criticalEventCount++;
+    EmailManager::sendCriticalEventEmail(event + " detected by " + sensor + " at " + timestamp);
+}
+
+void DataManager::resolveCriticalEvent(const String& event, const String& sensor) {
+    for (auto& criticalEvent : criticalEvents) {
+        if (criticalEvent.event == event && criticalEvent.sensor == sensor && !criticalEvent.resolved) {
+            criticalEvent.resolved = true;
+        }
+    }
+}
+
+void DataManager::sendDailySummary() {
+    String summaryMessage = "Résumé des dernières 24 heures :\n";
+    summaryMessage += "Heure actuelle : " + getCurrentTime() + "\n";
+    summaryMessage += "Événements critiques : " + String(criticalEventCount) + "\n";
+    for (const auto& criticalEvent : criticalEvents) {
+        summaryMessage += "- " + criticalEvent.event + " (" + criticalEvent.sensor + ") à " + criticalEvent.timestamp;
+        if (criticalEvent.resolved) {
+            summaryMessage += " [Résolu]";
+        }
+        summaryMessage += "\n";
+    }
+    if (criticalEvents.empty()) {
+        summaryMessage = "Aucun événement critique.";
+    }
+
+    EmailManager::sendDailySummaryEmail(summaryMessage);
+    criticalEvents.clear();
+    criticalEventCount = 0;
+}
+
+void DataManager::sendWeeklySummary() {
+    String summaryMessage = "Résumé des 7 derniers jours :\n";
+    summaryMessage += "Heure actuelle : " + getCurrentTime() + "\n";
+    summaryMessage += "Événements critiques : " + String(criticalEventCount) + "\n";
+    for (const auto& criticalEvent : criticalEvents) {
+        summaryMessage += "- " + criticalEvent.event + " (" + criticalEvent.sensor + ") à " + criticalEvent.timestamp;
+        if (criticalEvent.resolved) {
+            summaryMessage += " [Résolu]";
+        }
+        summaryMessage += "\n";
+    }
+    if (criticalEvents.empty()) {
+        summaryMessage = "Aucun événement critique.";
+    }
+
+    EmailManager::sendWeeklySummaryEmail(summaryMessage);
+    criticalEvents.clear();
+    criticalEventCount = 0;
+}
+
+void DataManager::sendMonthlySummary() {
+    String summaryMessage = "Résumé des 30 derniers jours :\n";
+    summaryMessage += "Heure actuelle : " + getCurrentTime() + "\n";
+    summaryMessage += "Événements critiques : " + String(criticalEventCount) + "\n";
+    for (const auto& criticalEvent : criticalEvents) {
+        summaryMessage += "- " + criticalEvent.event + " (" + criticalEvent.sensor + ") à " + criticalEvent.timestamp;
+        if (criticalEvent.resolved) {
+            summaryMessage += " [Résolu]";
+        }
+        summaryMessage += "\n";
+    }
+    if (criticalEvents.empty()) {
+        summaryMessage = "Aucun événement critique.";
+    }
+
+    EmailManager::sendMonthlySummaryEmail(summaryMessage);
+    criticalEvents.clear();
+    criticalEventCount = 0;
+}
+
+String DataManager::getCurrentTime() {
+    struct tm timeinfo;
+    if (!getLocalTime(&timeinfo)) {
+        Serial.println("Failed to obtain time");
+        return "N/A";
+    }
+    char buffer[26];
+    strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", &timeinfo);
+    return String(buffer);
+}
+
+
+
+void DataManager::sendSummaryData() {
+    try {
         thingSpeakManager->sendSummaryData(*sensorManager);
-      } catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         Serial.println(e.what());
-      }
-      lastSummarySendTime = currentTime;
-    } else {
-      Serial.println("WiFi not connected, skipping summary data send.");
-      ledManager.setNoInternet(); // Indicate no internet connection
     }
-  }
-
-  // Check if the error state should continue
-  if (errorOccurred && (currentTime - errorStartTime >= 10000)) {
-    errorOccurred = false;
-    ledManager.setNormalOperation(); // Return to normal operation after 10 seconds
-  }
 }

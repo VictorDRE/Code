@@ -4,27 +4,48 @@
 #include "ThingSpeakManager.h"
 #include "SensorManager.h"
 #include "NotificationManager.h"
+#include "LEDManager.h"
+#include <vector>
 
-// DataManager class to handle data operations
+struct CriticalEvent {
+    String event;
+    String sensor;
+    String timestamp;
+    bool resolved;
+};
+
 class DataManager {
 public:
-  DataManager(ThingSpeakManager* thingSpeakManager, SensorManager* sensorManager, NotificationManager* notificationManager);
-  void handleData();
+    DataManager(ThingSpeakManager* thingSpeakManager, SensorManager* sensorManager, NotificationManager* notificationManager, LEDManager* ledManager);
+    void handleData(); // Handle data collection and sending
+    void logCriticalEvent(const String& event, const String& sensor); // Log a critical event
+    void resolveCriticalEvent(const String& event, const String& sensor); // Resolve a critical event
+    void sendDailySummary(); // Method to send daily summary
+    void sendWeeklySummary(); // Method to send weekly summary
+    void sendMonthlySummary(); // Method to send monthly summary
+    void sendSummaryData(); // Method to send summary data to ThingSpeak
 
 private:
-  ThingSpeakManager* thingSpeakManager;
-  SensorManager* sensorManager;
-  NotificationManager* notificationManager;
-  unsigned long lastSendTime = 0;
-  unsigned long updateInterval = 20000; // 20 seconds
-  unsigned long lastSummarySendTime = 0;
-  unsigned long summaryUpdateInterval = 900000; // 15 minutes in milliseconds
-  unsigned long lastMoistureMessageTime = 0; // Last watering message time
-  unsigned long moistureMessageInterval = 3600000; // 1 hour in milliseconds
-  int lowMoistureCount = 0;
-  int lowMoistureLimit = 5; // Number of low moisture readings before notification
-  bool errorOccurred; // Flag to indicate if an error occurred
-  unsigned long errorStartTime; // Time when the error occurred
+    ThingSpeakManager* thingSpeakManager; // Pointer to ThingSpeakManager
+    SensorManager* sensorManager; // Pointer to SensorManager
+    NotificationManager* notificationManager; // Pointer to NotificationManager
+    LEDManager* ledManager; // Pointer to LEDManager
+    std::vector<CriticalEvent> criticalEvents; // Vector to store critical events
+    unsigned long lastSendTime = 0; // Last time data was sent
+    unsigned long updateInterval = 20000; // Interval between data updates (20 seconds)
+    unsigned long sleepCount = 0; // Counter for sleep cycles
+    unsigned long lastMoistureMessageTime = 0; // Last time a moisture message was sent
+    unsigned long moistureMessageInterval = 3600000; // Interval between moisture messages (1 hour)
+    int lowMoistureCount = 0; // Count of low moisture readings
+    int lowMoistureLimit = 5; // Limit of low moisture readings before notification
+    bool errorOccurred; // Flag to indicate if an error occurred
+    unsigned long errorStartTime; // Time when the error occurred
+    int criticalEventCount; // Counter for critical events
+
+    String getCurrentTime(); // Method to get current time as a string
+    void readAndSendSensorData(); // Method to read sensor data and send it to ThingSpeak
+    void handleNotifications(); // Method to handle notifications
+    bool checkAndSendNotification(bool condition, const String& event, const String& sensor, const String& message); // Check condition and send notification
 };
 
 #endif // DATA_MANAGER_H
