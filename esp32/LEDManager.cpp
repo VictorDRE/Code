@@ -27,5 +27,8 @@ void LEDManager::setCriticalError() {
 void LEDManager::setWifiSearching() {
     digitalWrite(greenLEDPin, LOW);
     digitalWrite(redLEDPin, LOW);
-  
+}
+void LEDManager::setLightSleep() {
+    digitalWrite(greenLEDPin, HIGH);
+    digitalWrite(redLEDPin, HIGH);
 }
