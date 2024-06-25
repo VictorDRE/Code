@@ -3,27 +3,6 @@
 
 extern LEDManager ledManager;
 
-void WiFiManager::connectToWiFi() {
-    Serial.println("Connecting to WiFi...");
-    ledManager.setWifiSearching(); // Indicate WiFi searching
-    WiFi.begin(ssid, password);
-
-    int retries = 0;
-    while (WiFi.status() != WL_CONNECTED && retries < 15) {
-        delay(500);
-        Serial.print(".");
-        retries++;
-    }
-
-    if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("WiFi Connected");
-        ledManager.setNormalOperation();
-    } else {
-        Serial.println("Failed to connect to WiFi");
-        ledManager.setNoInternet();
-    }
-}
-
 void WiFiManager::checkWiFiConnection() {
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi connection lost. Attempting to reconnect...");
@@ -33,7 +12,9 @@ void WiFiManager::checkWiFiConnection() {
         WiFi.disconnect();
         WiFi.begin(ssid, password);
 
-        while (WiFi.status() != WL_CONNECTED && retries < 10) {
+        while (WiFi.status() != WL_CONNECTED && retries < 15) {
+            WiFi.disconnect();
+            WiFi.begin(ssid, password);
             delay(500);
             Serial.print(".");
             retries++;
@@ -49,4 +30,12 @@ void WiFiManager::checkWiFiConnection() {
     } else {
         ledManager.setNormalOperation();
     }
+}
+
+void WiFiManager::connectToWiFi() {
+    Serial.println("Connecting to WiFi...");
+    ledManager.setWifiSearching(); // Indicate WiFi searching
+    WiFi.begin(ssid, password);
+    sleep(5);
+    checkWiFiConnection();
 }

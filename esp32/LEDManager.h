@@ -8,6 +8,7 @@ public:
     void setErrorState();
     void setCriticalError();
     void setWifiSearching(); 
+    void setLightSleep();
 };
 
 #endif // LEDMANAGER_H
