@@ -4,7 +4,7 @@
 
 DataManager::DataManager(ThingSpeakManager* thingSpeakManager, SensorManager* sensorManager, NotificationManager* notificationManager, LEDManager* ledManager)
     : thingSpeakManager(thingSpeakManager), sensorManager(sensorManager), notificationManager(notificationManager), ledManager(ledManager),
-      errorOccurred(false), errorStartTime(0), criticalEventCount(0), sleepCount(0),
+      errorOccurred(false), errorStartTime(0), criticalDailyEventCount(0), criticalWeeklyEventCount(0), criticalMonthlyEventCount(0), sleepCount(0),
       lastMoistureMessageTime(0), lowMoistureCount(0) {
 }
 
@@ -116,8 +116,13 @@ bool DataManager::checkAndSendNotification(bool condition, const String& event, 
 
 void DataManager::logCriticalEvent(const String& event, const String& sensor) {
     String timestamp = getCurrentTime();
-    criticalEvents.push_back({event, sensor, timestamp, false});
-    criticalEventCount++;
+    criticalDailyEvents.push_back({event, sensor, timestamp, false});
+    criticalWeeklyEvents.push_back({event, sensor, timestamp, false});
+    criticalMonthlyEvents.push_back({event, sensor, timestamp, false});
+
+    criticalDailyEventCount++;
+    criticalWeeklyEventCount++;
+    criticalMonthlyEventCount++;
 
     // Send critical event email with details
     EmailManager::sendCriticalEventEmail(event + " detected by " + sensor + " at " + timestamp);
@@ -125,71 +130,82 @@ void DataManager::logCriticalEvent(const String& event, const String& sensor) {
 
 
 void DataManager::resolveCriticalEvent(const String& event, const String& sensor) {
-    for (auto& criticalEvent : criticalEvents) {
+    for (auto& criticalEvent : criticalDailyEvents) {
         if (criticalEvent.event == event && criticalEvent.sensor == sensor && !criticalEvent.resolved) {
             criticalEvent.resolved = true;
         }
     }
+    for (auto& criticalEvent : criticalWeeklyEvents) {
+        if (criticalEvent.event == event && criticalEvent.sensor == sensor && !criticalEvent.resolved) {
+            criticalEvent.resolved = true;
+        }
+    }
+    for (auto& criticalEvent : criticalMonthlyEvents) {
+        if (criticalEvent.event == event && criticalEvent.sensor == sensor && !criticalEvent.resolved) {
+            criticalEvent.resolved = true;
+        }
+    }
+    
 }
 
 void DataManager::sendDailySummary() {
     String summaryMessage = "Résumé des dernières 24 heures :\n";
     summaryMessage += "Heure actuelle : " + getCurrentTime() + "\n";
-    summaryMessage += "Événements critiques : " + String(criticalEventCount) + "\n";
-    for (const auto& criticalEvent : criticalEvents) {
+    summaryMessage += "Événements critiques : " + String(criticalDailyEventCount) + "\n";
+    for (const auto& criticalEvent : criticalDailyEvents) {
         summaryMessage += "- " + criticalEvent.event + " (" + criticalEvent.sensor + ") à " + criticalEvent.timestamp;
         if (criticalEvent.resolved) {
             summaryMessage += " [Résolu]";
         }
         summaryMessage += "\n";
     }
-    if (criticalEvents.empty()) {
+    if (criticalDailyEvents.empty()) {
         summaryMessage = "Aucun événement critique.";
     }
 
     EmailManager::sendDailySummaryEmail(summaryMessage);
-    criticalEvents.clear();
-    criticalEventCount = 0;
+    criticalDailyEvents.clear();
+    criticalDailyEventCount = 0;
 }
 
 void DataManager::sendWeeklySummary() {
     String summaryMessage = "Résumé des 7 derniers jours :\n";
     summaryMessage += "Heure actuelle : " + getCurrentTime() + "\n";
-    summaryMessage += "Événements critiques : " + String(criticalEventCount) + "\n";
-    for (const auto& criticalEvent : criticalEvents) {
+    summaryMessage += "Événements critiques : " + String(criticalWeeklyEventCount) + "\n";
+    for (const auto& criticalEvent : criticalWeeklyEvents) {
         summaryMessage += "- " + criticalEvent.event + " (" + criticalEvent.sensor + ") à " + criticalEvent.timestamp;
         if (criticalEvent.resolved) {
             summaryMessage += " [Résolu]";
         }
         summaryMessage += "\n";
     }
-    if (criticalEvents.empty()) {
+    if (criticalWeeklyEvents.empty()) {
         summaryMessage = "Aucun événement critique.";
     }
 
     EmailManager::sendWeeklySummaryEmail(summaryMessage);
-    criticalEvents.clear();
-    criticalEventCount = 0;
+    criticalWeeklyEvents.clear();
+    criticalWeeklyEventCount = 0;
 }
 
 void DataManager::sendMonthlySummary() {
     String summaryMessage = "Résumé des 30 derniers jours :\n";
     summaryMessage += "Heure actuelle : " + getCurrentTime() + "\n";
-    summaryMessage += "Événements critiques : " + String(criticalEventCount) + "\n";
-    for (const auto& criticalEvent : criticalEvents) {
+    summaryMessage += "Événements critiques : " + String(criticalMonthlyEventCount) + "\n";
+    for (const auto& criticalEvent : criticalMonthlyEvents) {
         summaryMessage += "- " + criticalEvent.event + " (" + criticalEvent.sensor + ") à " + criticalEvent.timestamp;
         if (criticalEvent.resolved) {
             summaryMessage += " [Résolu]";
         }
         summaryMessage += "\n";
     }
-    if (criticalEvents.empty()) {
+    if (criticalMonthlyEvents.empty()) {
         summaryMessage = "Aucun événement critique.";
     }
 
     EmailManager::sendMonthlySummaryEmail(summaryMessage);
-    criticalEvents.clear();
-    criticalEventCount = 0;
+    criticalMonthlyEvents.clear();
+    criticalMonthlyEventCount = 0;
 }
 
 String DataManager::getCurrentTime() {

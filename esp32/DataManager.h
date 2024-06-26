@@ -30,7 +30,9 @@ private:
     SensorManager* sensorManager; // Pointer to SensorManager
     NotificationManager* notificationManager; // Pointer to NotificationManager
     LEDManager* ledManager; // Pointer to LEDManager
-    std::vector<CriticalEvent> criticalEvents; // Vector to store critical events
+    std::vector<CriticalEvent> criticalDailyEvents; // Vector to store critical events
+    std::vector<CriticalEvent> criticalWeeklyEvents; // Vector to store critical events
+    std::vector<CriticalEvent> criticalMonthlyEvents; // Vector to store critical events
     unsigned long lastSendTime = 0; // Last time data was sent
     unsigned long updateInterval = 20000; // Interval between data updates (20 seconds)
     unsigned long sleepCount = 0; // Counter for sleep cycles
@@ -40,7 +42,9 @@ private:
     int lowMoistureLimit = 5; // Limit of low moisture readings before notification
     bool errorOccurred; // Flag to indicate if an error occurred
     unsigned long errorStartTime; // Time when the error occurred
-    int criticalEventCount; // Counter for critical events
+    int criticalDailyEventCount; // Counter for critical events
+    int criticalWeeklyEventCount; // Counter for critical events
+    int criticalMonthlyEventCount; // Counter for critical events
 
     String getCurrentTime(); // Method to get current time as a string
     void readAndSendSensorData(); // Method to read sensor data and send it to ThingSpeak
