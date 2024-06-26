@@ -34,13 +34,30 @@ bool ThingSpeakManager::retrySendField(int fieldNumber, float value, int maxRetr
     return false;
 }
 
+bool ThingSpeakManager::retrySendFields(int maxRetries) {
+    int attempts = 0
+    while (attempts < maxRetries) {
+        if (ThingSpeak.writeFields(channelNumber, apiKey) == 200) {
+            return true;
+        }
+        attempts++;
+        int delayTime = 5000 * attempts; // Delay progressively longer: 5s, 10s, 15s, etc.
+        Serial.println("Retrying in " + String(delayTime / 1000) + " seconds...");
+        delay(delayTime);
+    }
+    return false;
+}
+
 bool ThingSpeakManager::sendData(SensorManager& sensorManager) {
     Serial.println("Sending sensor data to ThingSpeak...");
     bool success = true;
-    success &= retrySendField(1, sensorManager.temperature, 3);
-    success &= retrySendField(2, sensorManager.humidity, 3);
-    success &= retrySendField(3, sensorManager.light, 3);
-    success &= retrySendField(4, sensorManager.moisture, 3);
+
+    ThingSpeak.setField(1, sensorManager.temperature);
+    ThingSpeak.setField(2, sensorManager.humidity);
+    ThingSpeak.setField(3, sensorManager.light);
+    ThingSpeak.setField(4, sensorManager.moisture);
+    success &= retrySendFields(3);
+
     Serial.println("Sensor data sent");
     return success;
 }
