@@ -21,3 +21,4 @@ ESP32 1.3.3 Ajout d'un module mail au lieu de WhatsApp
 ESP32 1.3.4 Système de logs avec heure
 ESP32 1.3.5 Mode veille 1H
 ESP32 1.3.6 Restructuration du WiFi et changement du sleepmode en light sleep (16 mA)
+ESP32 1.3.7 Envoie des mesures physiques en une seul fois + séparation des criticals events en 3 (Daily/Quotidien, Weekly/Hebdomadaire, Monthly/Mensuel)
