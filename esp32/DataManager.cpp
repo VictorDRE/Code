@@ -30,6 +30,7 @@ void DataManager::handleData() {
     if (sleepCount % 720 == 0) { // Every 720 sleep cycles (monthly)
         sendMonthlySummary();
     }
+    
 }
 
 // Function to read sensor data and send it to ThingSpeak
@@ -93,7 +94,6 @@ void DataManager::logCriticalEvent(const String& event, const String& sensor) {
     EmailManager::sendCriticalEventEmail(event + " detected by " + sensor + " at " + timestamp);
 }
 
-// Resolve critical events
 void DataManager::resolveCriticalEvent(const String& event, const String& sensor) {
     // Mark event as resolved in daily events list
     for (auto& criticalEvent : criticalDailyEvents) {

@@ -5,9 +5,10 @@
 #include "DataManager.h"
 #include "EmailManager.h"
 #include "LEDManager.h"
+#include "WiFiManager.h"
 
-#define uS_TO_S_FACTOR 100000000  
-#define TIME_TO_SLEEP  100      
+//#define uS_TO_S_FACTOR 1000000
+//#define TIME_TO_SLEEP  60
 
 // Instantiate sensor manager and ThingSpeak manager
 SensorManager sensorManager;
@@ -28,8 +29,10 @@ void loop() {
 
   // Initialize EmailManager
   emailManager.setup();
+
   // Initialize LedManager
   ledManager.setup();
+
   // Check time
   struct tm timeinfo;
   if (getLocalTime(&timeinfo)) {

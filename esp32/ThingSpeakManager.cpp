@@ -62,6 +62,7 @@ bool ThingSpeakManager::sendData(SensorManager& sensorManager) {
     ThingSpeak.setField(2, sensorManager.humidity);
     ThingSpeak.setField(3, sensorManager.light);
     ThingSpeak.setField(4, sensorManager.moisture);
+    
     success &= retrySendFields(3); // Retry sending data if it fails
 
     Serial.println("Sensor data sent");

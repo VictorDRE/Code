@@ -19,3 +19,5 @@ ESP32 1.3.1 Modification internet
 ESP32 1.3.2 Ajout d'un mode veille (a define)
 ESP32 1.3.3 Ajout d'un module mail au lieu de WhatsApp
 ESP32 1.3.4 Système de logs avec heure
+ESP32 1.3.5 Mode veille 1H
+ESP32 1.3.6 Restructuration du WiFi et changement du sleepmode en light sleep (16 mA)
