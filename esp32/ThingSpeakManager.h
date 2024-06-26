@@ -12,12 +12,14 @@ public:
   bool sendField(int fieldNumber, float value); // Send data to a specific ThingSpeak field
   bool sendData(SensorManager& sensorManager); // Send sensor data to ThingSpeak
   bool sendSummaryData(SensorManager& sensorManager); // Send summary data to ThingSpeak
+  bool retrySendField(int fieldNumber, float value, int maxRetries); // Retry sending data to a ThingSpeak field until success or max retries
+  bool retrySendFields(int maxRetries); // Retry sending data to all previously set ThingSpeak fields until success or max retries
+
 
 private:
   WiFiClient client; // WiFi client for ThingSpeak
   const char* apiKey = "C6JT20CYOZIYQJZQ"; // API key for ThingSpeak
   const unsigned long channelNumber = 2565602; // Channel number for ThingSpeak
-  bool retrySendField(int fieldNumber, float value, int maxRetries); // Retry sending data to a ThingSpeak field until success or max retries
 };
 
 #endif // THINGSPEAK_MANAGER_H

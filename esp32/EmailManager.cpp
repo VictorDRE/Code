@@ -6,8 +6,8 @@
 #define SMTP_HOST "smtp.gmail.com"
 #define SMTP_PORT 465
 #define AUTHOR_EMAIL "siibourges@gmail.com"
-#define AUTHOR_PASSWORD "nwgr wzrz qiwe nwxe" // Utilisez le mot de passe d'application généré ici
-#define RECIPIENT_EMAIL "victor.dreyer02@gmail.com"
+#define AUTHOR_PASSWORD "nwgr wzrz qiwe nwxe" // Use the generated application password here
+#define RECIPIENT_EMAIL "ethan.lefreteur@sii.fr"
 
 // Define the NTP server and time zone offset
 #define NTP_SERVER "pool.ntp.org"
@@ -17,9 +17,11 @@
 SMTPSession smtp;
 ESP_Mail_Session mailSession;
 
+// Set up email and time configurations
 void EmailManager::setup() {
-    smtp.debug(1);
+    smtp.debug(1); // Enable debug
 
+    // Set mail server and login credentials
     mailSession.server.host_name = SMTP_HOST;
     mailSession.server.port = SMTP_PORT;
     mailSession.login.email = AUTHOR_EMAIL;
@@ -31,34 +33,39 @@ void EmailManager::setup() {
     // Wait for time to be set
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo)) {
-        Serial.println("Failed to obtain time");
+        Serial.println("Failed to obtain time"); // Log if time setup fails
         return;
     }
 }
 
+// Function to send email with given subject and message
 void EmailManager::sendEmail(const String& subject, const String& message) {
     SMTP_Message msg;
 
+    // Set email sender and recipient
     msg.sender.name = "ESP32";
     msg.sender.email = AUTHOR_EMAIL;
     msg.subject = subject;
     msg.addRecipient("Recipient", RECIPIENT_EMAIL);
     msg.text.content = message.c_str();
 
+    // Connect to SMTP server
     if (!smtp.connect(&mailSession)) {
-        Serial.println("Failed to connect to SMTP server.");
+        Serial.println("Failed to connect to SMTP server."); // Log if connection fails
         return;
     }
 
+    // Send email and check for errors
     if (!MailClient.sendMail(&smtp, &msg)) {
-        Serial.println("Error sending Email, " + smtp.errorReason());
+        Serial.println("Error sending Email, " + smtp.errorReason()); // Log if sending fails
     } else {
-        Serial.println("Email sent successfully.");
+        Serial.println("Email sent successfully."); // Log if sending succeeds
     }
 
-    smtp.closeSession();
+    smtp.closeSession(); // Close SMTP session
 }
 
+// Functions to send specific types of emails
 void EmailManager::sendCriticalEventEmail(const String& eventDetails) {
     sendEmail("Critical Event Notification", eventDetails);
 }
