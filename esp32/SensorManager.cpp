@@ -6,6 +6,9 @@
 #define DHTTYPE DHT22
 #define MOISTURE_SENSOR 34
 
+const int airValue = 3498;
+const int waterValue = 1473;
+
 // Constructor initializes the DHT and TSL2561 sensors
 SensorManager::SensorManager() : dht(DHTPIN, DHTTYPE), tsl(TSL2561_ADDR_FLOAT, 12345) {}
 
@@ -44,7 +47,9 @@ void SensorManager::readSensors() {
 
   // Read soil moisture level and convert to percentage
   int rawMoisture = analogRead(MOISTURE_SENSOR);
-  moisture = map(rawMoisture, 3508, 0, 0, 100); // Convert to percentage
+  Serial.println(rawMoisture);
+  moisture = map(rawMoisture, waterValue, airValue, 0, 100); // Convert to percentage
+  moisture = 100-moisture;
   if (moisture < 0) moisture = 0;
   if (moisture > 100) moisture = 100;
 }

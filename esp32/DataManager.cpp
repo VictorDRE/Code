@@ -5,8 +5,7 @@
 // Constructor initializes all manager pointers and event counters
 DataManager::DataManager(ThingSpeakManager* thingSpeakManager, SensorManager* sensorManager, LEDManager* ledManager, WiFiManager* wifiManager)
     : thingSpeakManager(thingSpeakManager), sensorManager(sensorManager), ledManager(ledManager), wifiManager(wifiManager),
-      criticalDailyEventCount(0), criticalWeeklyEventCount(0), criticalMonthlyEventCount(0), sleepCount(0),
-      lastMoistureMessageTime(0) {
+      criticalDailyEventCount(0), criticalWeeklyEventCount(0), criticalMonthlyEventCount(0), sleepCount(0) {
 }
 
 // Main data handling function, called periodically
@@ -15,6 +14,7 @@ void DataManager::handleData() {
     // Check WiFi connection status
     wifiManager->checkWiFiConnection();
     
+    readAndSendSensorData();
     // Increment sleep count on each call
     sleepCount++;
 
