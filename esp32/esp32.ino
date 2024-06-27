@@ -11,7 +11,7 @@
 SensorManager sensorManager;
 ThingSpeakManager thingSpeakManager;
 EmailManager emailManager;
-LEDManager ledManager;  // Assurez-vous que cela est une instance globale
+LEDManager ledManager;  
 WiFiManager wifiManager;
 DataManager dataManager(&thingSpeakManager, &sensorManager, &ledManager, &wifiManager);
 
