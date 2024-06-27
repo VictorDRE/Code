@@ -7,9 +7,6 @@
 #include "LEDManager.h"
 #include "WiFiManager.h"
 
-//#define uS_TO_S_FACTOR 1000000
-//#define TIME_TO_SLEEP  60
-
 // Instantiate sensor manager and ThingSpeak manager
 SensorManager sensorManager;
 ThingSpeakManager thingSpeakManager;
