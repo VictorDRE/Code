@@ -44,18 +44,16 @@ void loop() {
   // Initialize ThingSpeakManager
   thingSpeakManager.setup();
 
-  // Handle data
+  // Read and send data
   dataManager.handleData();
 
   // Print the wakeup reason for debugging
   printWakeupReason();
 
-  // Configure the timer to wake up the ESP32 every 100 seconds
-  esp_sleep_enable_timer_wakeup(3600000000);  //TIME_TO_SLEEP * uS_TO_S_FACTOR);
+  // Configure the timer to wake up the ESP32
+  esp_sleep_enable_timer_wakeup(3600 * 1000000U);  //TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
   // Go to sleep now
-  Serial.println("Going to sleep now");
-  delay(1000);  // Allow time for messages to be sent
   Serial.println("Entering light sleep...");
   
   ledManager.setLightSleep();
