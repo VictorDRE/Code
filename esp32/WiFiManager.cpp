@@ -3,8 +3,11 @@
 
 extern LEDManager ledManager;
 
-// Check WiFi connection status and reconnect if necessary
 void WiFiManager::checkWiFiConnection() {
+    /*
+        Check WiFi connection status and reconnect if necessary
+    */
+    
     if (WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi connection lost. Attempting to reconnect...");
         ledManager.setWifiSearching(); // Indicate WiFi searching
@@ -35,6 +38,10 @@ void WiFiManager::checkWiFiConnection() {
 
 // Connect to WiFi
 void WiFiManager::connectToWiFi() {
+    /*
+        Connect to WiFi with the given ssid and password in the wifi manager class (in WiFiManager.h file)
+    */
+
     Serial.println("Connecting to WiFi...");
     ledManager.setWifiSearching(); // Indicate WiFi searching
     WiFi.begin(ssid, password);

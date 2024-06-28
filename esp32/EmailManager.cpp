@@ -17,8 +17,11 @@
 SMTPSession smtp;
 ESP_Mail_Session mailSession;
 
-// Set up email and time configurations
 void EmailManager::setup() {
+    /*
+        Set up email and time configurations
+    */
+    
     smtp.debug(1); // Enable debug
 
     // Set mail server and login credentials
@@ -38,8 +41,14 @@ void EmailManager::setup() {
     }
 }
 
-// Function to send email with given subject and message
 void EmailManager::sendEmail(const String& subject, const String& message) {
+    /*
+        Send email with given subject and message
+
+        const String& subject : Subject of the email
+        const String& message : Message / body of the email
+    */
+
     SMTP_Message msg;
 
     // Set email sender and recipient
@@ -64,8 +73,13 @@ void EmailManager::sendEmail(const String& subject, const String& message) {
 
     smtp.closeSession(); // Close SMTP session
 }
-
-// Functions to send specific types of emails
+/*
+    Send an email for :
+        - single critical event
+        - summary of the day
+        - summary of the week
+        - summary of the month
+*/
 void EmailManager::sendCriticalEventEmail(const String& eventDetails) {
     sendEmail("Critical Event Notification", eventDetails);
 }

@@ -12,10 +12,14 @@ const int waterValue = 1473;
 // Constructor initializes the DHT and TSL2561 sensors
 SensorManager::SensorManager() : dht(DHTPIN, DHTTYPE), tsl(TSL2561_ADDR_FLOAT, 12345) {}
 
-// Setup function to initialize the sensors
 void SensorManager::setup() {
+  /*
+    Setup function to initialize the sensors
+  */
+
   Serial.begin(115200);
   dht.begin(); // Initialize DHT sensor
+
   // Initialize TSL2561 sensor and check if it is recognized
   if (!tsl.begin()) {
     Serial.println("TSL2561 sensor not recognized");
@@ -23,8 +27,11 @@ void SensorManager::setup() {
   }
 }
 
-// Function to read data from the sensors
 void SensorManager::readSensors() {
+  /*
+    Read all sensors and verify for any errors
+  */
+
   // Read temperature and humidity from DHT sensor
   temperature = dht.readTemperature();
   humidity = dht.readHumidity();
@@ -54,8 +61,11 @@ void SensorManager::readSensors() {
   if (moisture > 100) moisture = 100;
 }
 
-// Function to print sensor data to the serial monitor
 void SensorManager::printSensorData() {
+  /* 
+    Print all the sensors variable in the serial monitor with a descriptive text in case of detected problems for debugging purpose
+  */
+
   Serial.println("-- Current Conditions --");
 
   // Print light level with descriptive text

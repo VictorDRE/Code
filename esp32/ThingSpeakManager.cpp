@@ -1,14 +1,28 @@
 #include "ThingSpeakManager.h"
 #include "SensorManager.h"
 
-// Setup function to initialize ThingSpeak
+
 void ThingSpeakManager::setup() {
+    /*
+        Setup function to initialize ThingSpeak library
+    */
+
     ThingSpeak.begin(client);
     Serial.println("ThingSpeak setup completed");
 }
 
-// Function to send a single field to ThingSpeak
+
 bool ThingSpeakManager::sendField(int fieldNumber, float value) {
+    /*
+        Set and send a single field to ThingSpeak
+
+        int fieldNumber : The number of the field on ThingSpeak you want to send the value on
+        float value : The value you want to send to ThingSpeak
+
+        Return true if success
+        Return false if not sucess
+    */
+
     Serial.println("Sending field " + String(fieldNumber) + " with value: " + String(value));
     ThingSpeak.setField(fieldNumber, value);
     int responseCode = ThingSpeak.writeFields(channelNumber, apiKey);
@@ -22,8 +36,19 @@ bool ThingSpeakManager::sendField(int fieldNumber, float value) {
     }
 }
 
-// Function to retry sending a field to ThingSpeak with exponential backoff
+
 bool ThingSpeakManager::retrySendField(int fieldNumber, float value, int maxRetries) {
+    /*
+        Set and send a single field using sendField function and retry with exponential backoff in case of error
+
+        int fieldNumber : The number of the field on ThingSpeak you want to send the value on
+        float value : The value you want to send to ThingSpeak
+        int maxRetries : The number of max sending retry you want
+
+        Return true if success
+        Return false if not sucess
+    */
+
     int attempts = 0;
     while (attempts < maxRetries) {
         if (sendField(fieldNumber, value)) {
@@ -37,8 +62,16 @@ bool ThingSpeakManager::retrySendField(int fieldNumber, float value, int maxRetr
     return false;
 }
 
-// Function to retry sending all fields to ThingSpeak with exponential backoff
 bool ThingSpeakManager::retrySendFields(int maxRetries) {
+    /*
+        Send all previously set fields and retry with exponential backoff in case of error
+
+        int maxRetries : The number of max sending retry you want
+
+        Return true if success
+        Return false if not sucess
+    */
+
     int attempts = 0;
     while (attempts < maxRetries) {
         if (ThingSpeak.writeFields(channelNumber, apiKey) == 200) {
@@ -52,8 +85,16 @@ bool ThingSpeakManager::retrySendFields(int maxRetries) {
     return false;
 }
 
-// Function to send all sensor data to ThingSpeak
 bool ThingSpeakManager::sendData(SensorManager& sensorManager) {
+    /*
+        Set and sends all four known fields using retrySendFiels function
+
+        SensorManager& sensorManager : The sensor manager class used to read and store sensors values
+
+        Return true if success
+        Return false if not sucess
+    */
+
     Serial.println("Sending sensor data to ThingSpeak...");
     bool success = true;
 
@@ -66,20 +107,5 @@ bool ThingSpeakManager::sendData(SensorManager& sensorManager) {
     success &= retrySendFields(3); // Retry sending data if it fails
 
     Serial.println("Sensor data sent");
-    return success;
-}
-
-// Function to send summary data to ThingSpeak
-bool ThingSpeakManager::sendSummaryData(SensorManager& sensorManager) {
-    Serial.println("Sending summary data to ThingSpeak...");
-    bool success = true;
-
-    // Send summary data fields with retries
-    success &= retrySendField(5, sensorManager.temperature, 3);
-    success &= retrySendField(6, sensorManager.humidity, 3);
-    success &= retrySendField(7, sensorManager.light, 3);
-    success &= retrySendField(8, sensorManager.moisture, 3);
-
-    Serial.println("Summary data sent");
     return success;
 }

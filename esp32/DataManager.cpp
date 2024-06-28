@@ -8,8 +8,13 @@ DataManager::DataManager(ThingSpeakManager* thingSpeakManager, SensorManager* se
       criticalDailyEventCount(0), criticalWeeklyEventCount(0), criticalMonthlyEventCount(0), sleepCount(0) {
 }
 
-// Main data handling function, called periodically
 void DataManager::handleData() {
+    /*
+        Function that checks for internet connection, 
+        read and send sensor data to ThingSpeak and, 
+        send a summary email every day, week, month
+    */
+
     unsigned long currentTime = millis();
     // Check WiFi connection status
     wifiManager->checkWiFiConnection();
@@ -33,8 +38,11 @@ void DataManager::handleData() {
     
 }
 
-// Function to read sensor data and send it to ThingSpeak
 void DataManager::readAndSendSensorData() {
+    /*
+        Read, print and send sensor data to ThingSpeak
+    */
+
     try {
         sensorManager->readSensors(); // Read sensor data
         sensorManager->printSensorData(); // Print sensor data for debugging
@@ -48,8 +56,12 @@ void DataManager::readAndSendSensorData() {
     }
 }
 
-// Function to handle notifications based on sensor data
 void DataManager::handleNotifications() {
+    /*
+        Check sensors values then send an email and store for summary in case of a detected problem 
+        using checkAndSendNotification function
+    */
+    
     bool messageSent = false;
 
     // Check sensor conditions and send notifications accordingly
@@ -67,8 +79,19 @@ void DataManager::handleNotifications() {
     }
 }
 
-// Function to check conditions and send notifications if necessary
 bool DataManager::checkAndSendNotification(bool condition, const String& event, const String& sensor, const String& message) {
+    /*
+        Check the given condition then send an email and store for summary if the condition is true or set is as resolved
+        if the problem have been detected earlier and is no longer
+
+        bool condition : Condition to verify for email to be sent and stored for summary
+        const String& event : String that tell what is the problem (related to condition)
+        const String& sensor : String that tell which sensor detected the problem
+        const String& message : String that tell any additional information to be present in the email (like what as to be done)
+
+        Return true if condition is met
+        Return false if condition is not met
+    */
     if (condition) {
         Serial.println(event + ", sending email notification..."); // Log event
         logCriticalEvent(event, sensor); // Log critical event
@@ -79,8 +102,13 @@ bool DataManager::checkAndSendNotification(bool condition, const String& event, 
     }
 }
 
-// Log critical events with details
 void DataManager::logCriticalEvent(const String& event, const String& sensor) {
+    /*
+        Set an event as critical to be sent in a mail and in the daily, weekly and monthly summary
+
+        const String& event : String that refers to the problem
+        const String& sensor : String that refers to the sensor that detected the problem
+    */
     String timestamp = getCurrentTime(); // Get current time
     criticalDailyEvents.push_back({event, sensor, timestamp, false}); // Log event in daily list
     criticalWeeklyEvents.push_back({event, sensor, timestamp, false}); // Log event in weekly list
@@ -95,6 +123,13 @@ void DataManager::logCriticalEvent(const String& event, const String& sensor) {
 }
 
 void DataManager::resolveCriticalEvent(const String& event, const String& sensor) {
+    /*
+        Set a critical event as resolved
+
+        const String& event : String that refers to the problem
+        const String& sensor : String that refers to the sensor that detected the problem
+    */
+
     // Mark event as resolved in daily events list
     for (auto& criticalEvent : criticalDailyEvents) {
         if (criticalEvent.event == event && criticalEvent.sensor == sensor && !criticalEvent.resolved) {
@@ -115,8 +150,11 @@ void DataManager::resolveCriticalEvent(const String& event, const String& sensor
     }
 }
 
-// Send daily summary email
 void DataManager::sendDailySummary() {
+    /*
+        Send the daily summary of all the event that happened during that day
+    */
+
     String summaryMessage = "Résumé des dernières 24 heures :\n";
     summaryMessage += "Heure actuelle : " + getCurrentTime() + "\n";
     summaryMessage += "Événements critiques : " + String(criticalDailyEventCount) + "\n";
@@ -139,8 +177,11 @@ void DataManager::sendDailySummary() {
     criticalDailyEventCount = 0; // Reset daily event count
 }
 
-// Send weekly summary email
 void DataManager::sendWeeklySummary() {
+    /*
+        Send the weekly summary of all the event that happened during that week
+    */
+
     String summaryMessage = "Résumé des 7 derniers jours :\n";
     summaryMessage += "Heure actuelle : " + getCurrentTime() + "\n";
     summaryMessage += "Événements critiques : " + String(criticalWeeklyEventCount) + "\n";
@@ -163,8 +204,11 @@ void DataManager::sendWeeklySummary() {
     criticalWeeklyEventCount = 0; // Reset weekly event count
 }
 
-// Send monthly summary email
 void DataManager::sendMonthlySummary() {
+    /*
+        Send the monthly summary of all the event that happened during that month
+    */
+
     String summaryMessage = "Résumé des 30 derniers jours :\n";
     summaryMessage += "Heure actuelle : " + getCurrentTime() + "\n";
     summaryMessage += "Événements critiques : " + String(criticalMonthlyEventCount) + "\n";
@@ -187,8 +231,14 @@ void DataManager::sendMonthlySummary() {
     criticalMonthlyEventCount = 0; // Reset monthly event count
 }
 
-// Function to get the current local time as a string
 String DataManager::getCurrentTime() {
+    /*
+        Get and return the current time as a string
+
+        Return string representing the time
+        Return string N/A if it couldn't be obtained
+    */
+
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo)) {
         Serial.println("Failed to obtain time");
@@ -197,13 +247,4 @@ String DataManager::getCurrentTime() {
     char buffer[26];
     strftime(buffer, 26, "%Y-%m-%d %H:%M:%S", &timeinfo);
     return String(buffer);
-}
-
-// Function to send summary data to ThingSpeak
-void DataManager::sendSummaryData() {
-    try {
-        thingSpeakManager->sendSummaryData(*sensorManager); // Send summary data
-    } catch (const std::exception& e) {
-        Serial.println(e.what()); // Print any exceptions
-    }
 }
