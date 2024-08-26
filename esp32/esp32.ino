@@ -3,14 +3,12 @@
 #include "SensorManager.h"
 #include "ThingSpeakManager.h"
 #include "DataManager.h"
-#include "EmailManager.h"
 #include "LEDManager.h"
 #include "WiFiManager.h"
 
 // Instantiate sensor manager and ThingSpeak manager
 SensorManager sensorManager;
 ThingSpeakManager thingSpeakManager;
-EmailManager emailManager;
 LEDManager ledManager;  
 WiFiManager wifiManager;
 DataManager dataManager(&thingSpeakManager, &sensorManager, &ledManager, &wifiManager);
@@ -23,9 +21,6 @@ void setup() {
 void loop() {
   // Connect to WiFi
   wifiManager.connectToWiFi();
-
-  // Initialize EmailManager
-  emailManager.setup();
 
   // Initialize LedManager
   ledManager.setup();
